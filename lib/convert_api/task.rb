@@ -3,33 +3,37 @@ module ConvertApi
     def initialize(from_format, to_format, params, conversion_timeout: nil)
       @from_format = from_format
       @to_format = to_format
-      @params = params
       @conversion_timeout = conversion_timeout || config.conversion_timeout
-    end
-
-    def run
-      params = normalize_params(@params).merge(
+      @params = normalize_params(params).merge(
         Timeout: @conversion_timeout,
         StoreFile: true,
       )
+    end
 
+    def run
       read_timeout = @conversion_timeout + config.conversion_timeout_delta if @conversion_timeout
 
       response = ConvertApi.client.post(
-        request_path(params),
-        params,
+        request_path,
+        @params,
         read_timeout: read_timeout,
       )
+
+      return AsyncResult.new(response) if async?
 
       Result.new(response)
     end
 
     private
 
-    def request_path(params)
-      from_format = @from_format || detect_format(params)
-      converter = params[:converter] ? "/converter/#{params[:converter]}" : ''
-      async = params[:Async] ? 'async/' : ''
+    def async?
+      @async ||= !!@params[:Async]
+    end
+
+    def request_path
+      from_format = @from_format || detect_format
+      converter = @params[:converter] ? "/converter/#{@params[:converter]}" : ''
+      async = async? ? 'async/' : ''
 
       "#{async}convert/#{from_format}/to/#{@to_format}#{converter}"
     end
@@ -67,10 +71,10 @@ module ConvertApi
       files
     end
 
-    def detect_format(params)
-      return DEFAULT_URL_FORMAT if params[:Url]
+    def detect_format
+      return DEFAULT_URL_FORMAT if @params[:Url]
 
-      resource = params[:File] || Array(params[:Files]).first
+      resource = @params[:File] || Array(@params[:Files]).first
 
       FormatDetector.new(resource, @to_format).run
     end

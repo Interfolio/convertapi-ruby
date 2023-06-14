@@ -25,7 +25,7 @@ RSpec.describe ConvertApi::Task do
           receive(:post).with('async/convert/txt/to/pdf', instance_of(Hash), instance_of(Hash)).and_return(result)
         )
 
-        expect(subject).to be_instance_of(ConvertApi::Result)
+        expect(subject).to be_instance_of(ConvertApi::AsyncResult)
       end
     end
   end
