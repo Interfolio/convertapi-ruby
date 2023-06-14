@@ -4,10 +4,10 @@ module ConvertApi
       @from_format = from_format
       @to_format = to_format
       @conversion_timeout = conversion_timeout || config.conversion_timeout
-      @params = normalize_params(params).merge(
+      @params = {
         Timeout: @conversion_timeout,
         StoreFile: true,
-      )
+      }.merge(normalize_params(params)
     end
 
     def run
