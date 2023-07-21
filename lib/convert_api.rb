@@ -28,6 +28,13 @@ module ConvertApi
     Task.new(from_format, to_format, params, conversion_timeout: conversion_timeout).run
   end
 
+  # Poll ConvertAPI for job status
+  # Raises ClientError with status code 202 if the job is not complete yet
+  # Raises ClientError with status code 404 if the job is not found
+  def poll(job_id)
+    Result.new(client.get("async/job/#{job_id}"))
+  end
+
   def user
     client.get('user')
   end
