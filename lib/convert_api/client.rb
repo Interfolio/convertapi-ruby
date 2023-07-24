@@ -30,7 +30,8 @@ module ConvertApi
 
     # Parameters that are always on the URL, even for POST
     POST_URL_PARAMS = [
-      :WebHook
+      :WebHook,
+      :JobId
     ].freeze
 
     def get(path, params = {}, options = {})
